@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS, cross_origin
 import socketio 
 import eventlet
@@ -11,15 +11,18 @@ import os, base64
 from io import BytesIO
 import sys
 
+sys.path.insert(0, '/home/demo/rgogoi/MammoGan-DZ-fork')
+
 session = {}
 ip = "0.0.0.0"
 
 sio = socketio.Server(cors_allowed_origins = "*", async_mode='threading')
 app = Flask(__name__, static_folder='interpolation-ui/build/static', template_folder='interpolation-ui/build')
+#app = Flask(__name__, static_folder='/home/demo/demo-apps/static/test')
 cors = CORS(app)
 
 cfg = get_cfg_defaults()
-config_file = "../configs/mammogans_hd.yaml"
+config_file = "/home/demo/rgogoi/MammoGan-DZ-fork/configs/mammogans_hd.yaml"
 # config_file = "../configs/mammogans_512.yaml"
 cfg.merge_from_file(config_file)
 
@@ -30,9 +33,20 @@ print("Running on ", torch.cuda.get_device_name(device))
 model = Model_Web(sio,cfg)
 model.build_model()
 
-@app.route('/')
-def base():
-    return render_template('index.html')
+@app.route("/test", methods=['GET'])
+def test():
+    if request.method == 'GET':
+        return "working"
+
+#@app.route('/<path:path>')
+#def base(path):
+#    print(path, file=sys.stdout)
+#    if path != "" and os.path.exists(app.static_folder + '/' + path):
+#        return send_from_directory(app.static_folder, path)
+#    else:
+#        return send_from_directory(app.static_folder, 'index.html')
+#    return send_from_directory(app.static_folder, filename)
+#    return render_template("index.html")
 
 @app.route('/upload', methods = ['GET', 'POST'])
 @cross_origin()
@@ -164,7 +178,9 @@ def annotate_src():
                
         return img_str
 
-#app = socketio.Middleware(sio, app)
-app.wsgi_app = socketio.Middleware(sio, app.wsgi_app)
-app.run( port = 8080, host = ip, debug = False, threaded=True)
-#eventlet.wsgi.server(eventlet.listen((ip, 8080)), app)
+
+if __name__ == "__main__":
+    #app = socketio.Middleware(sio, app)
+    app.wsgi_app = socketio.Middleware(sio, app.wsgi_app)
+    app.run( port = 5013, host = ip, debug = True, threaded=True)
+    #eventlet.wsgi.server(eventlet.listen((ip, 8080)), app)

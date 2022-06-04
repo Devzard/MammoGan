@@ -1,4 +1,8 @@
 import torch.utils.data
+import sys
+
+sys.path.insert(0, '/home/demo/rgogoi/MammoGan-DZ-fork')
+
 from net import *
 from model import Model
 from launcher import run
